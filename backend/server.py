@@ -26,6 +26,35 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Initialize automation services
+try:
+    # Initialize CRM service
+    crm_service = initialize_crm(google_automation)
+    
+    # Initialize reply processor
+    reply_processor = initialize_reply_processor(google_automation, crm_service)
+    
+    logging.info("Google automation services initialized successfully")
+    
+    # Initialize CRM structure on startup
+    async def initialize_crm_on_startup():
+        try:
+            if os.getenv('CRM_SPREADSHEET_ID'):
+                result = await crm_service.initialize_crm_structure()
+                logging.info(f"CRM initialized: {result}")
+            else:
+                logging.warning("CRM_SPREADSHEET_ID not configured - CRM features will be limited")
+        except Exception as e:
+            logging.error(f"CRM initialization failed: {str(e)}")
+    
+    # Run CRM initialization in background
+    asyncio.create_task(initialize_crm_on_startup())
+    
+except Exception as e:
+    logging.error(f"Failed to initialize automation services: {str(e)}")
+    crm_service = None
+    reply_processor = None
+
 # Create the main app without a prefix
 app = FastAPI()
 
