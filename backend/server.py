@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,6 +12,11 @@ from datetime import datetime, timedelta
 from enum import Enum
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 import asyncio
+
+# Import new automation services
+from google_services import google_automation, school_discovery, email_automation
+from crm_automation import initialize_crm
+from reply_automation import initialize_reply_processor
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
